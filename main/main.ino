@@ -4,6 +4,10 @@
 const int DataPin = 4;
 const int IRQpin =  3;
 
+const int SwitchPin = 8;
+
+bool outputState = false;
+
 PS2Keyboard keyboard;
 
 void KWrite(char c) {
@@ -37,13 +41,21 @@ void setup() {
   delay(1000);
   keyboard.begin(DataPin, IRQpin);
   Keyboard.begin();
+
+  pinMode(SwitchPin, INPUT);
 }
 
 void loop() {
   if (keyboard.available()) {
     // read the next key
     char c = keyboard.read();
-    // check for some of the special keys
-    KWrite(c);
+    
+    if (digitalRead(SwitchPin) == HIGH) {
+      KWrite(c);
+    } else {
+      Keyboard.write(KEY_RETURN);
+    }
+
+    
   }
 }
