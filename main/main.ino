@@ -53,6 +53,7 @@ void loop() {
     if (digitalRead(SwitchPin) == HIGH) {
       KWrite(c);
     } else {
+      // This is the password input mode
       Keyboard.write(KEY_RETURN);
     }
 
