@@ -1,4 +1,5 @@
 #include <PS2Keyboard.h>
+#include <Keyboard.h>
 
 const int DataPin = 4;
 const int IRQpin =  3;
@@ -8,41 +9,37 @@ PS2Keyboard keyboard;
 void setup() {
   delay(1000);
   keyboard.begin(DataPin, IRQpin);
-  Serial.begin(9600);
-  Serial.println("Keyboard Test:");
+  Keyboard.begin();
 }
 
 void loop() {
   if (keyboard.available()) {
-    
     // read the next key
     char c = keyboard.read();
-    
     // check for some of the special keys
     if (c == PS2_ENTER) {
-      Serial.println();
+      Keyboard.write(KEY_RETURN);
     } else if (c == PS2_TAB) {
-      Serial.println("[Tab]");
+      Keyboard.write(KEY_TAB);
     } else if (c == PS2_ESC) {
-      Serial.println("[ESC]");
+      Keyboard.write(KEY_ESC);
     } else if (c == PS2_PAGEDOWN) {
-      Serial.println("[PgDn]");
+      Keyboard.write(KEY_PAGE_DOWN);
     } else if (c == PS2_PAGEUP) {
-      Serial.println("[PgUp]");
+      Keyboard.write(KEY_PAGE_UP);
     } else if (c == PS2_LEFTARROW) {
-      Serial.println("[Left]");
+      Keyboard.write(KEY_LEFT_ARROW);
     } else if (c == PS2_RIGHTARROW) {
-      Serial.println("[Right]");
+      Keyboard.write(KEY_RIGHT_ARROW);
     } else if (c == PS2_UPARROW) {
-      Serial.println("[Up]");
+      Keyboard.write(KEY_UP_ARROW);
     } else if (c == PS2_DOWNARROW) {
-      Serial.println("[Down]");
+      Keyboard.write(KEY_DOWN_ARROW);
     } else if (c == PS2_DELETE) {
-      Serial.println("[Del]");
+      Keyboard.write(KEY_BACKSPACE);
     } else {
-      
-      // otherwise, just print all normal characters
-      Serial.println(c);
+      // otherwise, just send the normal character
+      Keyboard.write(c);
     }
   }
 }
