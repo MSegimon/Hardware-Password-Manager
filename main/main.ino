@@ -1,17 +1,4 @@
-void setup() {
-  Serial.begin(9600);
-}
-
-void loop() {
-  String message = "hello world"; // message to hash
-  
-  uint8_t salt[32] = { 
-  0x45, 0x21, 0x7B, 0x9F, 0x5A, 0x3C, 0x88, 0x2B, 
-  0x0A, 0x4F, 0x6E, 0xD8, 0x1B, 0x9C, 0xE5, 0x73, 
-  0x2E, 0x85, 0x47, 0x63, 0xB9, 0x1E, 0x06, 0xAF, 
-  0xDC, 0x51, 0xF3, 0x89, 0x74, 0x67, 0xC2, 0xAB 
-  }; // 256-bit salt
-  
+String hashFunction(uint8_t salt[32], String message) {
   uint32_t hash[8];
   for (int i = 0; i < 8; i++) {
     hash[i] = salt[i * 4] << 24 | salt[i * 4 + 1] << 16 | salt[i * 4 + 2] << 8 | salt[i * 4 + 3];
@@ -25,10 +12,31 @@ void loop() {
     hash[index] ^= temp;
   }
   
-  // Print the hash
+  // Concatenate the hash values as a string
+  String result;
   for (int i = 0; i < 8; i++) {
-    Serial.print(hash[i], HEX);
+    result += String(hash[i], HEX);
   }
+
+  return result;
+}
+
+void setup() {
+  Serial.begin(9600);
+}
+
+void loop() {
+  String message = "hello world"; // message to hash
+
+  uint8_t salt[32] = { 
+  0x45, 0x21, 0x7B, 0x9F, 0x5A, 0x3C, 0x88, 0x2B, 
+  0x0A, 0x4F, 0x6E, 0xD8, 0x1B, 0x9C, 0xE5, 0x73, 
+  0x2E, 0x85, 0x47, 0x63, 0xB9, 0x1E, 0x06, 0xAF, 
+  0xDC, 0x51, 0xF3, 0x89, 0x74, 0x67, 0xC2, 0xAB 
+  }; // 256-bit salt
   
+  
+  Serial.println(hashFunction(salt, message));
+
   delay(1000);
 }
