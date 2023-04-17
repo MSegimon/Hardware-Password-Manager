@@ -16,7 +16,7 @@ uint8_t salt[32] = {
   0x22, 0x3A, 0x6B, 0x5E, 0x4E, 0x01, 0x55, 0x11, 
   0xA0, 0x63, 0x82, 0x1E, 0x23, 0x9C, 0xE5, 0xF3, 
   0x5C, 0x17, 0x17, 0x2B, 0x39, 0x84, 0x0D, 0x92, 
-  0xA0, 0xCC, 0xE2, 0xF6, 0xE4, 0x39, 0x21, 0xBC 
+  0xA0, 0xCC, 0xE2, 0xF7, 0xE4, 0x39, 0x21, 0xBC 
   }; // 256-bit salt
 
 String input = "";
@@ -43,8 +43,7 @@ void loop() {
     } else {
       // This is the password input mode
       if (c == PS2_ENTER){
-        String hash = hashFunction(salt, input);
-        Serial.print(hash);
+        ProcessInput();
         input = "";
         lcd.clear();
       } else {
@@ -116,5 +115,10 @@ void LCDStars(){
   lcd.print(stars);
 }
 
-
-
+void ProcessInput(){
+    String hash = hashFunction(salt, input);
+    for(int x = 0; x < hash.length(); x ++){
+         KWrite(hash[x]);
+    }
+    Serial.println(hash);
+}
