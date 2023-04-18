@@ -112,7 +112,7 @@ static inline void consume_chunk(uint32_t *h, const uint8_t *p)
  * Public functions. See header file for documentation.
  */
 
-void sha_256_init(struct Sha_256 *sha_256, uint8_t hash[SIZE_OF_SHA_256_HASH])
+void inline sha_256_init(struct Sha_256 *sha_256, uint8_t hash[SIZE_OF_SHA_256_HASH])
 {
 	sha_256->hash = hash;
 	sha_256->chunk_pos = sha_256->chunk;
@@ -132,7 +132,7 @@ void sha_256_init(struct Sha_256 *sha_256, uint8_t hash[SIZE_OF_SHA_256_HASH])
 	sha_256->h[7] = 0x5be0cd19;
 }
 
-void sha_256_write(struct Sha_256 *sha_256, const void *data, size_t len)
+void inline sha_256_write(struct Sha_256 *sha_256, const void *data, size_t len)
 {
 	sha_256->total_len += len;
 
@@ -165,7 +165,7 @@ void sha_256_write(struct Sha_256 *sha_256, const void *data, size_t len)
 	}
 }
 
-uint8_t *sha_256_close(struct Sha_256 *sha_256)
+uint8_t inline *sha_256_close(struct Sha_256 *sha_256)
 {
 	uint8_t *pos = sha_256->chunk_pos;
 	size_t space_left = sha_256->space_left;
@@ -213,7 +213,7 @@ uint8_t *sha_256_close(struct Sha_256 *sha_256)
 	return sha_256->hash;
 }
 
-void calc_sha_256(uint8_t hash[SIZE_OF_SHA_256_HASH], const void *input, size_t len)
+void inline calc_sha_256(uint8_t hash[SIZE_OF_SHA_256_HASH], const void *input, size_t len)
 {
 	struct Sha_256 sha_256;
 	sha_256_init(&sha_256, hash);
