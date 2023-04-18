@@ -1,6 +1,7 @@
 #include <PS2Keyboard.h>
 #include <Keyboard.h>
 #include <LiquidCrystal_I2C.h>
+#include "sha256.c"
 
 const int DataPin = 6;
 const int IRQpin =  3;
@@ -19,7 +20,8 @@ uint8_t salt[32] = {
   0xA0, 0xCC, 0xE2, 0xF7, 0xE4, 0x39, 0x21, 0xBC 
   }; // 256-bit salt
 
-String input = "";
+char input[256];
+int len = 0;
 
 void setup() {
   delay(1000);
@@ -43,11 +45,18 @@ void loop() {
     } else {
       // This is the password input mode
       if (c == PS2_ENTER){
-        ProcessInput();
-        input = "";
+        input[len] = '\0';
+        uint8_t hash[32];
+        calc_sha_256(hash, input, len);
+        for(int i = 0; i < 32; i++){
+          Serial.print(hash[i]);
+        }
+        len = 0;
+        Serial.println();
         lcd.clear();
       } else {
-        input += c;
+        input[len] = c;
+        len++;
         LCDStars();
       }
     }
@@ -81,44 +90,13 @@ void KWrite(char c) {
   }
 }
 
-String hashFunction(uint8_t salt[32], String message) {
-  uint32_t hash[8];
-  for (int i = 0; i < 8; i++) {
-    hash[i] = salt[i * 4] << 24 | salt[i * 4 + 1] << 16 | salt[i * 4 + 2] << 8 | salt[i * 4 + 3];
-  }
-  
-  // Hash the message
-  for (int i = 0; i < message.length(); i++) {
-    uint32_t rotate = (i % 32);
-    uint32_t temp = ((uint32_t) message[i]) << rotate | ((uint32_t) message[i]) >> (32 - rotate);
-    int index = i % 8;
-    hash[index] ^= temp;
-  }
-  
-  // Concatenate the hash values as a string
-  String result;
-  for (int i = 0; i < 8; i++) {
-    result += String(hash[i], HEX);
-  }
-
-  return result;
-}
-
 void LCDStars(){
 //prints stars on bottom line for each char in input
   lcd.clear();
   String stars = "";
-  for (int x=0; x < input.length(); x++){
+  for (int x=0; x < len; x++){
     stars += "*";
   }
   lcd.setCursor(0,1); 
   lcd.print(stars);
-}
-
-void ProcessInput(){
-    String hash = hashFunction(salt, input);
-    for(int x = 0; x < hash.length(); x ++){
-         KWrite(hash[x]);
-    }
-    Serial.println(hash);
 }
