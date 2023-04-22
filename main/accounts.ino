@@ -1,6 +1,7 @@
 #include <PS2Keyboard.h>
 #include <Keyboard.h>
 #include <LiquidCrystal_I2C.h>
+#include "sha256.h"
 
 PS2Keyboard keyboard;
 LiquidCrystal_I2C lcd(0x20, 16, 2);
@@ -13,14 +14,17 @@ const int IRQpin =  3;
 
 String* accountNames = new String[10];
 bool toggleSwitchStatePrev = LOW;
-bool isMode1 = true;
+bool isMode1 = false;
 int currentScreen = 0;
 char x;
 char lastKey;
 int currentAccount = 0;
 int numAccounts = 0; 
 String newAccountName = "";
-String input = "";
+char input[256];
+int len = 0;
+char passw[256];
+int passw_len = 0;
 
 uint8_t salt[32] = { 
   0x22, 0x3A, 0x6B, 0x5E, 0x4E, 0x01, 0x55, 0x11, 
@@ -56,33 +60,10 @@ void KWrite(char c) {
   }
 }
 
-String hashFunction(uint8_t salt[32], String message) {
-  uint32_t hash[8];
-  for (int i = 0; i < 8; i++) {
-    hash[i] = salt[i * 4] << 24 | salt[i * 4 + 1] << 16 | salt[i * 4 + 2] << 8 | salt[i * 4 + 3];
-  }
-  
-  // Hash the message
-  for (int i = 0; i < message.length(); i++) {
-    uint32_t rotate = (i % 32);
-    uint32_t temp = ((uint32_t) message[i]) << rotate | ((uint32_t) message[i]) >> (32 - rotate);
-    int index = i % 8;
-    hash[index] ^= temp;
-  }
-  
-  // Concatenate the hash values as a string
-  String result;
-  for (int i = 0; i < 8; i++) {
-    result += String(hash[i], HEX);
-  }
-
-  return result;
-}
-
-void LCDStars(){
+void LCDStars(int len){
 //prints stars on bottom line for each char in input
   String stars = "";
-  for (int x=0; x < input.length(); x++){
+  for (int x=0; x < len; x++){
     stars += "*";
   }
   lcd.setCursor(0,1); 
@@ -90,11 +71,12 @@ void LCDStars(){
 }
 
 void ProcessInput(){
-    String hash = hashFunction(salt, input);
-    for(int x = 0; x < hash.length(); x ++){
-         KWrite(hash[x]);
-    }
-    Serial.println(hash);
+  uint8_t hash[32];
+  calc_sha_256(hash, passw, passw_len);
+  for(int i = 0; i < 32; i++){
+    Serial.print(hash[i]);
+  }
+  Serial.println();
 }
 
 void setup() {
@@ -108,12 +90,13 @@ void setup() {
 
 void loop() {
   bool toggleSwitchState = digitalRead(TOGGLE_SWITCH_PIN);
-  if (toggleSwitchState != toggleSwitchStatePrev && toggleSwitchState == LOW) { // If the toggle switch is toggled
-    isMode1 = !isMode1; // Toggle the mode flag
-    if (isMode1) {
+  if (toggleSwitchState != toggleSwitchStatePrev) { // If the toggle switch is toggled
+    if (toggleSwitchState == LOW) {
+      isMode1=true;
       digitalWrite(LED_PIN, LOW);
       lcd.noDisplay();
     } else {
+      isMode1=false;
       digitalWrite(LED_PIN, HIGH);
       lcd.display(); // turn on the display in mode2
       lcd.clear(); // clear the display
@@ -184,12 +167,19 @@ void loop() {
         accountNames = newAccountNames;
         numAccounts++;
         lcd.clear();
-        currentScreen = 0;
+        currentScreen = 4;
         newAccountName = "";
       } else if (currentScreen==0 && accountNames[currentAccount]) {
           currentScreen=3;
       } else if (currentScreen==3) {
-        
+        ProcessInput();
+        passw_len=0;
+        currentScreen=0;
+      } else if (currentScreen==4) {
+        if (len>0) {
+          currentScreen=0;
+          len=0;
+        }
       }
     } else if (x == PS2_TAB) { //use tab to delete accounts
       if (currentScreen == 0 && numAccounts > 0) {
@@ -236,9 +226,20 @@ void loop() {
     lcd.clear();
     lcd.setCursor(0, 0);
     lcd.print("Enter password: ");
-    input += lastKey;
-    Serial.println(input);
-    LCDStars();
+    if (lastKey >= ' ' && lastKey <= '~') {
+      passw[len] = lastKey;
+      passw_len++;
+      LCDStars(passw_len);
+    }
+  } else if (currentScreen == 4) {
+    lcd.clear();
+    lcd.setCursor(0, 0);
+    lcd.print("Enter password: ");
+    if (lastKey >= ' ' && lastKey <= '~') {
+      input[len] = lastKey;
+      len++;
+      LCDStars(len);
+    }
   }
   
   delay(100); 
