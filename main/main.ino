@@ -54,6 +54,10 @@ void loop() {
         len = 0;
         Serial.println();
         lcd.clear();
+      } else if(c == PS2_DELETE){
+        if(len > 0){len--;}
+        input[len] = '\0';
+        LCDStars();
       } else {
         input[len] = c;
         len++;
@@ -97,6 +101,8 @@ void LCDStars(){
   for (int x=0; x < len; x++){
     stars += "*";
   }
+  // lcd.setCursor(0,0); 
+  // lcd.print(input);
   lcd.setCursor(0,1); 
   lcd.print(stars);
 }
