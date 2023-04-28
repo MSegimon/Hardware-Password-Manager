@@ -1,9 +1,9 @@
 #include <PS2Keyboard.h>
 #include <Keyboard.h>
-#include <LiquidCrystal_I2C.h>
+#include <LiquidCrystal.h>
 #include "sha256.c"
 
-const int DataPin = 6;
+const int DataPin = 2;
 const int IRQpin =  3;
 
 const int SwitchPin = 8;
@@ -11,7 +11,9 @@ const int SwitchPin = 8;
 bool outputState = false;
 
 PS2Keyboard keyboard;
-LiquidCrystal_I2C lcd(0x20,16,2);
+
+const int rs = 10, en = 16, d4 = 4, d5 = 5, d6 = 6, d7 = 7;
+LiquidCrystal lcd(rs, en, d4, d5, d6, d7);
 
 uint8_t salt[32] = { 
   0x22, 0x3A, 0x6B, 0x5E, 0x4E, 0x01, 0x55, 0x11, 
@@ -20,7 +22,7 @@ uint8_t salt[32] = {
   0xA0, 0xCC, 0xE2, 0xF7, 0xE4, 0x39, 0x21, 0xBC 
   }; // 256-bit salt
 
-char input[256];
+char input[64];
 int len = 0;
 
 void setup() {
@@ -31,9 +33,7 @@ void setup() {
 
   pinMode(SwitchPin, INPUT);
 
-  lcd.init();
-  lcd.clear();         
-  lcd.backlight();
+  lcd.begin(16,2);
 }
 
 void loop() {
