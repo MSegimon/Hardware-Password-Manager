@@ -21,6 +21,7 @@ char account[64];
 int len = 0;
 
 int state = 0; //0 for "input account" and 1 for "input password"
+bool passThrough;
 
 void setup() {
   delay(1000);
@@ -32,6 +33,8 @@ void setup() {
 
   lcd.begin(16,2);
 
+  passThrough = digitalRead(SwitchPin);
+
   dispPrompt();
 }
 
@@ -40,11 +43,12 @@ void loop() {
     // read the next key
     char c = keyboard.read();
     if (digitalRead(SwitchPin) == HIGH) {
+      passThrough = true;
       dispPrompt();
-      state = 2;
       KWrite(c);
     } else {
       // This is the password input mode
+      passThrough = false;
       if (c == PS2_ENTER){
         if(state == 0){ //account name being entered
           input[len] = '\0';
@@ -82,6 +86,11 @@ void loop() {
       }
     }
   }
+
+  if (passThrough != digitalRead(SwitchPin)){
+    passThrough = digitalRead(SwitchPin);
+    dispPrompt();
+  }
 }
 
 void KWrite(char c) {
@@ -113,23 +122,27 @@ void KWrite(char c) {
 
 void dispPrompt(){
   lcd.clear();
-  if (state == 0){
+  if (passThrough) { 
+    lcd.setCursor(2,0); 
+    lcd.print("Pass Through");
+    lcd.setCursor(6,1); 
+    lcd.print("Mode");
+  } else {
+    if (state == 0){
     lcd.setCursor(0,0); 
     lcd.print("Account Name:");
     lcd.setCursor(0,1); 
     lcd.print(input);
-  } else if (state == 1){
-    String stars = "";
-    for (int x=0; x < len; x++){
-      stars += "*";
+    } else if (state == 1){
+      String stars = "";
+      for (int x=0; x < len; x++){
+        stars += "*";
+      }
+      lcd.setCursor(0,0); 
+      lcd.print("Password:");
+      lcd.setCursor(0,1); 
+      lcd.print(stars);
     }
-    lcd.setCursor(0,0); 
-    lcd.print("Password:");
-    lcd.setCursor(0,1); 
-    lcd.print(stars);
-  } else if (state == 2){
-    lcd.setCursor(0,0); 
-    lcd.print("Pass Through");
   }
 }
 
@@ -138,3 +151,4 @@ void clearInput(){
     input[x] = '\0';
   }
 }
+
