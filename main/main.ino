@@ -66,11 +66,12 @@ void loop() {
           strcat(hash_in, account);
           strcat(hash_in, input);
           calc_sha_256(hash, hash_in, len);
-          for(int i = 0; i < 32; i++){
+          for(int i = 0; i < 15; i++){
             // Serial.print(toAlphaNumeric(hash[i]));
             delay(20);
             KWrite(toAlphaNumeric(hash[i]));
           }
+          Keyboard.write(KEY_RETURN);
           clearInput();
           len = 0;
           Serial.println();
