@@ -21,7 +21,7 @@ A hardware password manager that is plugged in between a keyboard and a computer
 - PS2Keyboard.h
 - Keyboard.h
 - LiquidCrystal.h
-- sha256.c
+- sha256.c (from https://github.com/amosnier/sha-2)
 
 ## Installation
 
