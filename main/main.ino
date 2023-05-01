@@ -18,6 +18,13 @@ LiquidCrystal lcd(rs, en, d4, d5, d6, d7);
 char input[64];
 char account[64];
 
+char id[32] = { 
+  0x22, 0x3A, 0x6B, 0x5E, 0x4E, 0x01, 0x55, 0x11, 
+  0xA0, 0x63, 0x82, 0x1E, 0x23, 0x9C, 0xE5, 0xF3, 
+  0x5C, 0x17, 0x17, 0x2B, 0x39, 0x84, 0x0D, 0x92, 
+  0xA0, 0xCC, 0xE2, 0xF7, 0xE4, 0x39, 0x21, 0xBC 
+};
+
 int len = 0;
 
 int state = 0; //0 for "input account" and 1 for "input password"
@@ -60,14 +67,12 @@ void loop() {
         } else if (state == 1){ //password name being entered
           input[len] = '\0';
           uint8_t hash[32];
-          char hash_in[128] = {0};
-          // Serial.println(account);
-          // Serial.println(input);
+          char hash_in[160] = {0};
           strcat(hash_in, account);
           strcat(hash_in, input);
+          strcat(hash_in, id);
           calc_sha_256(hash, hash_in, len);
           for(int i = 0; i < 15; i++){
-            // Serial.print(toAlphaNumeric(hash[i]));
             delay(20);
             KWrite(toAlphaNumeric(hash[i]));
           }
